@@ -1,0 +1,70 @@
+\begin{document}
+
+\section{Maximum Sustainable Yield}
+x(t) \equiv biomass at t
+
+dx/dt = G(x)
+
+G(x) \equiv logistic growth = rx(1-k/x)
+
+Introduce fishermen
+
+dx/dt = G(x) - h(x)
+
+simple case h(x) = h_0
+
+vs.
+
+h(x) = c * x * E = kx == catch-effort relation
+
+\section{Agentize}
+
+\subsection{Objects}
+
+\item{fish
+instance attributes
+	\item{position}
+	\item{age}
+	\item{longevity}
+	\item{gender}
+	\item{size}
+class attributes
+	\item{maturation age}
+
+class methods
+	\item{move}
+	\item{grow}
+	\item{reproduce}
+	\item{age}
+	\item{die}
+}
+
+\item{patch
+	\item{fishes}
+	\item{carrying capacity}
+}
+
+\item{boat
+attributes
+	\item{position}
+	\item{velocity}
+	\item{caught}
+	\item{capacity}
+	\item{effort expended}
+
+methods
+	\item{strategize}
+	\item{}
+}
+
+\item{policy-maker
+attributes
+	\item{total quota}
+methods
+	\item{allocate}
+}
+	
+50x50 grid	
+	
+
+\end{document}
