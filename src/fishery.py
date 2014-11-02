@@ -9,15 +9,17 @@ from random import randint
 from random import shuffle
 from math import exp
 
+
 """
 Ocean parameters
 """
 TheOcean = None
-Initial_Population = 1000
+Initial_Population = 5000
 ocean_dim = 50
 
-patch_resource = 4
-patch_regrow_rate = 0.05  #also used as diffusion rate
+patch_resource = 1.0
+patch_regrow_rate = 1.0
+patch_diffusion_rate = 8.0/9.0 #spread evenly all directions
 
 FEMALE = 0
 MALE = 1
@@ -31,9 +33,8 @@ MATURE_AGE = 365   #age of maturity, days
 MATURE_SIZE = 1.0  #how big at MATURE_AGE
 SPAWN_SEASON = 14  # how many days does spawning last?
 BROOD = 1 # number of spawn produced by pregnancy
-MALE_FACTOR = 0.25 #20 male fish results in 99% probablity of pregnancy
+MALE_FACTOR = 0.05 
 CONSUMPTION_RATE = 0.05 # fraction of body mass fish can eat in a setting
-MOVE_COST = 1/(5*ocean_dim) # fish can traverse the ocean for 5 days without eating before dying
 
 
 class Fish(object):
@@ -63,8 +64,16 @@ class Fish(object):
         attractors = {}
         #calculate food attractors
         food_factor = (1 - self.health) if self.health < 1.0 else 0
+        if self.patch.resource > 0:
+            norm = self.patch.resource
+        else:
+            norm = 1.0
         for patch in patches:
-            attractors[patch] = food_factor*patch.resource/self.patch.resource
+            if patch==self.patch:
+                resource = self.patch.resource
+            else:
+                resource = patch.resource - CONSUMPTION_RATE
+            attractors[patch] = food_factor*resource/norm
         if self.spawning:
             spawn_attractors = {}
             count = 0
@@ -80,20 +89,19 @@ class Fish(object):
                     attractors[patch] += spawn_attractors[patch]/count  #normalize
                 else:
                     attractors[patch] += random()
-            
-        patches = sorted(patches, key = lambda patch : -attractors[patch])
-        if patches[0] != self.patch:
-            self.moveTo(patches[0])
+            pass
+        
+        max_patch = max(iter(attractors.keys()), key = (lambda patch: attractors[patch]))
+        if max_patch != self.patch:
+            self.moveTo(max_patch)
     
     def moveTo(self, patch):
-        TheOcean.removeFish(self)
-        self.patch = patch
-        TheOcean.addFish(self)
-        self.health -= MOVE_COST #assume patches are adjacent
+        TheOcean.moveFishTo(self, patch)
+        self.health -= CONSUMPTION_RATE #assume patches are adjacent
         self.moves_this_step += 1
         
     def canMove(self):
-        return self.moves_this_step < 5
+        return (self.moves_this_step < 5 and not self.moves_this_step == -1) # -1 for external forcing of no more moves
     
     def spawn(self):
         if self.fertile and self.spawning:
@@ -102,37 +110,40 @@ class Fish(object):
             if random()<p:
                 for i in range(BROOD):
                     TheOcean.addFish(Fish(self.patch))  # spawn a new fish
-                self.spawning = False
+                self.spawning = False #birth only once per season
     
     def eat(self):
-        amount = CONSUMPTION_RATE*self.size
+        amount = min(CONSUMPTION_RATE*self.size, self.patch.resource)
         self.patch.lose(amount)
         self.health += CONSUMPTION_RATE
                 
     def step(self, spawning):
         self.age += 1
         self.moves_this_step = 0
-        self.health -= MOVE_COST # takes energy to stay in place, too
+        self.health -= CONSUMPTION_RATE # takes energy to stay in place, too
         if not self.fertile:  #a faster check than the next, saves a few instructions per fish step
             if self.age >= MATURE_AGE and self.gender == FEMALE:
                 self.fertile = True
-        if spawning==0:
+        if spawning==0 and self.age >= MATURE_AGE:
             self.spawning = True  # turn on at the beginning of spawn season
-        elif spawning>SPAWN_SEASON:
+        elif spawning==-1:
             self.spawning = False # turn off at the end of spawn season
         
         self.grow()
         while(self.health < 1 and self.canMove()):
-            while(self.patch.resource > CONSUMPTION_RATE*self.size and self.health < 1.0):
+            while(self.patch.resource > 0 and self.health < 1.0):
                 self.eat()
-            if self.health < 1:
+            if self.health < 1: # not enough food at current location
+                oldpatch = self.patch
                 self.move()
-        if (self.spawning and self.canMove()):
+                if self.patch==oldpatch: 
+                    self.moves_this_step = -1 # prevents infinite loop while spawning
+        if (self.spawning and self.canMove()): # look nearby for mates
             self.move()
         self.spawn()
         
         if self.age > LONGEVITY or self.health < 0.01:  # fish dies
-            TheOcean.removeFish(self)
+            TheOcean.removeDeadFish(self)
             
                 
 class Patch(object):
@@ -149,13 +160,18 @@ class Patch(object):
             self.resource = 0
     
     def diffuse(self, neighbors):
-        amount = patch_regrow_rate*self.resource/8 # amount that diffuses each direction
-        self.resource *= (1-patch_regrow_rate) # subtract total amount that diffuses
+        """
+        allows "dead" patches to regrow from nearby live patches
+        """
+        amount = patch_diffusion_rate*self.resource/8 # amount that diffuses each direction
+        self.resource *= (1-patch_diffusion_rate) # subtract total amount that diffuses
         for neighbor in neighbors:
             neighbor.resource += amount
             
     def lose(self, amount):
         self.resource -= amount
+        if self.resource <= 0:
+            pass
     
 class Ocean(object):
 
@@ -164,11 +180,16 @@ class Ocean(object):
         self.spawning = -1
         self.fishes_at = {}
         self.patches = {}
+        self.population = 0
+        self.fish_births = 0
+        self.fish_deaths = 0
+        self.total_resource = 0
         for x in range(ocean_dim):
             for y in range(ocean_dim):
                 patch = Patch(x,y)
                 self.patches[(x,y)] = patch
                 self.fishes_at[patch] = [] #initialize empty array of fishes
+                self.total_resource += patch.resource
               
         # initialize a population of fish  
         for i in range(Initial_Population):
@@ -182,17 +203,23 @@ class Ocean(object):
         
     def addFish(self, new_fish):            
         self.fishes_at[new_fish.patch].append(new_fish)
-        if new_fish.ID >= Initial_Population:
-            pass
+        self.population += 1
+        self.fish_births +=1
         
     def step(self):
         self.ticks += 1
         # first, regrow patches and diffuse resource
+        self.total_resource = 0
+        self.fish_moved = 0
         patches = list(self.patches.values())
         shuffle(patches)
         for patch in patches:
             patch.regrow()
+            self.total_resource += patch.resource
             patch.diffuse(self.getNeighborsOf(patch))
+            
+        if self.total_resource < 0.1 * ocean_dim**2:
+            pass # a breakpoint for debugging
         
         if self.ticks%365 <= SPAWN_SEASON:
             self.spawning += 1
@@ -215,12 +242,6 @@ class Ocean(object):
                     neighbors.append(self.patches[(x,y)])
         shuffle(neighbors)
         return neighbors
-    
-    def countPopulation(self):
-        count_abs = 0 #absolute count of fish
-        for patch in self.patches.values():
-            count_abs += len(self.fishes_at[patch])
-        return count_abs
             
     def countMatureMaleFishAt(self, patch):
         count = 0
@@ -246,14 +267,36 @@ class Ocean(object):
     def countFishAt(self, patch):
         return len(self.fishes_at[patch])
     
-    def removeFish(self, fish):
+    def removeDeadFish(self, fish):
         self.fishes_at[fish.patch].remove(fish)
+        self.population -= 1
+        self.fish_deaths += 1
+        
+    def moveFishTo(self, fish, destination):
+        self.fishes_at[fish.patch].remove(fish)
+        self.fishes_at[destination].append(fish)
+        fish.patch = destination
+        self.fish_moved += 1
 
 if __name__ == '__main__':
     TheOcean = Ocean()
-    for step in range(5*365):
-        if step%7==0:
-            print("week %i:"%int(step/7))
-            print("\tpopulation: \t%i"%TheOcean.countPopulation())
+    births = TheOcean.fish_births
+    deaths = TheOcean.fish_deaths
+    pop_integrated = 0
+    record_period = 30
+    for step in range(20*365):
         TheOcean.step()
-            
+        pop_integrated += TheOcean.population
+        if step%record_period==0:
+            print("%i-day period '# %i:"%(record_period, int(step/record_period)))
+            print("\tpopulation: \t%i"%TheOcean.population)
+            new_births = TheOcean.fish_births - births
+            births = TheOcean.fish_births
+            new_deaths = TheOcean.fish_deaths - deaths
+            deaths = TheOcean.fish_deaths
+            print("\tbirths: \t%i"%new_births)
+            print("\tdeaths: \t%i"%new_deaths)
+            print("\tresource: \t%f"%TheOcean.total_resource)
+            print("\tfish moved: \t%i"%TheOcean.fish_moved)          
+            print("\taverage dpop/dt: \t%f"%((TheOcean.fish_births-TheOcean.fish_deaths)/(step+1)))
+            print("\taverage population: \t%f"%((pop_integrated)/(step+1)))
