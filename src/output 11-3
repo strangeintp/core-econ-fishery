@@ -1,0 +1,2182 @@
+"""
+Ocean parameters
+"""
+TheOcean = None
+Initial_Population = 60000
+ocean_dim = 50
+
+patch_resource = 50.0
+patch_regrow_rate = 1.0
+patch_diffusion_rate = 8.0/9.0 #spread evenly all directions
+
+FEMALE = 0
+MALE = 1
+
+"""
+Fish parameters
+"""
+FRY_SIZE = 0.001
+LONGEVITY = 3650  #longevity, days
+MATURE_AGE = 365   #age of maturity, days
+MATURE_SIZE = 0.75  #what fraction of full size at maturity?
+MATURE_TAU = MATURE_AGE/-log(1-MATURE_SIZE)  # results in size(age) = 1 - e^-(age/MATURE_AGE)
+SPAWN_SEASON = 360  # how many days does spawning last?
+SPAWN_BEHAVIOR = False # special behavior for spawning; not really needed for high quantities of fish
+BROOD = 2 # number of spawn produced by pregnancy
+P_SEASON = 0.99 # probability of brooding during spawn season assuming daily exposure to 50% male population ratio 
+METABOLIC_RATE = 0.05 # fraction of body mass fish can eat in a setting; daily energy cost
+MOVE_COST = 0.2/ocean_dim
+
+MALE_FACTOR = 2 * (1 - (1-P_SEASON)**(1/SPAWN_SEASON))  # P_DAILY = MALE_FACTOR*MALE_RATIO  ==> produces P_SEASON birth probability @ male_ratio=1/2
+
+def minimumResource(fish):
+    return fish.size*METABOLIC_RATE  # assume fish can only extract so much from the environment, proportional to fish size
+
+"""
+Boat Parameters
+"""
+TRANSIENT_DELAY = 0  #moratorium to let initial population transients settle out
+DISTANCE = ocean_dim
+TECH_VARIANCE = 0
+NUM_BOATS = 20
+NET_SIZE = 0.8  # what's the smallest fish size the net can catch
+HOLD_CAPACITY = 9.9*NET_SIZE
+CAPTURE_EFFICIENCY = 0.25
+
+SPAWN_PREVENTION_POLICY = False
+
+
+
+
+
+
+30-day period '# 0:
+	population: 	76410
+	mature population: 	50243
+	births: 	21546
+	deaths: 	5136
+	resource: 	105768.383093
+	fish moved: 	51189
+	fish caught: 	3724
+	average dpop/dt: 	2547.000000
+	average population: 	69640.400000
+30-day period '# 1:
+	population: 	84470
+	mature population: 	46467
+	births: 	12644
+	deaths: 	4584
+	resource: 	106046.522674
+	fish moved: 	34551
+	fish caught: 	3786
+	average dpop/dt: 	1407.833333
+	average population: 	75386.866667
+30-day period '# 2:
+	population: 	87835
+	mature population: 	42904
+	births: 	7516
+	deaths: 	4151
+	resource: 	106667.869116
+	fish moved: 	23845
+	fish caught: 	3597
+	average dpop/dt: 	975.944444
+	average population: 	79083.377778
+30-day period '# 3:
+	population: 	88672
+	mature population: 	39828
+	births: 	4456
+	deaths: 	3619
+	resource: 	106573.500764
+	fish moved: 	17528
+	fish caught: 	3187
+	average dpop/dt: 	738.933333
+	average population: 	81430.333333
+30-day period '# 4:
+	population: 	88051
+	mature population: 	37155
+	births: 	2558
+	deaths: 	3179
+	resource: 	107054.850343
+	fish moved: 	13127
+	fish caught: 	2801
+	average dpop/dt: 	587.006667
+	average population: 	82825.566667
+30-day period '# 5:
+	population: 	86687
+	mature population: 	34668
+	births: 	1608
+	deaths: 	2972
+	resource: 	106071.288082
+	fish moved: 	9744
+	fish caught: 	2624
+	average dpop/dt: 	481.594444
+	average population: 	83581.594444
+30-day period '# 6:
+	population: 	85136
+	mature population: 	32472
+	births: 	1108
+	deaths: 	2659
+	resource: 	106445.716434
+	fish moved: 	7620
+	fish caught: 	2345
+	average dpop/dt: 	405.409524
+	average population: 	83909.419048
+30-day period '# 7:
+	population: 	83610
+	mature population: 	30683
+	births: 	748
+	deaths: 	2274
+	resource: 	106486.883237
+	fish moved: 	6142
+	fish caught: 	1980
+	average dpop/dt: 	348.375000
+	average population: 	83961.170833
+30-day period '# 8:
+	population: 	82205
+	mature population: 	29170
+	births: 	614
+	deaths: 	2019
+	resource: 	106671.726919
+	fish moved: 	4474
+	fish caught: 	1763
+	average dpop/dt: 	304.462963
+	average population: 	83840.588889
+30-day period '# 9:
+	population: 	80885
+	mature population: 	27772
+	births: 	572
+	deaths: 	1892
+	resource: 	106821.168422
+	fish moved: 	3271
+	fish caught: 	1640
+	average dpop/dt: 	269.616667
+	average population: 	83610.180000
+30-day period '# 10:
+	population: 	79793
+	mature population: 	26603
+	births: 	556
+	deaths: 	1648
+	resource: 	106363.482180
+	fish moved: 	3051
+	fish caught: 	1417
+	average dpop/dt: 	241.796970
+	average population: 	83310.103030
+30-day period '# 11:
+	population: 	78801
+	mature population: 	25574
+	births: 	518
+	deaths: 	1510
+	resource: 	106009.263670
+	fish moved: 	2150
+	fish caught: 	1281
+	average dpop/dt: 	218.891667
+	average population: 	82974.069444
+30-day period '# 12:
+	population: 	86151
+	mature population: 	42240
+	births: 	9130
+	deaths: 	1780
+	resource: 	106406.509230
+	fish moved: 	25533
+	fish caught: 	1488
+	average dpop/dt: 	220.900000
+	average population: 	82867.958974
+30-day period '# 13:
+	population: 	96933
+	mature population: 	54432
+	births: 	12132
+	deaths: 	1350
+	resource: 	106994.219766
+	fish moved: 	28152
+	fish caught: 	1025
+	average dpop/dt: 	230.792857
+	average population: 	83501.473810
+30-day period '# 14:
+	population: 	106314
+	mature population: 	60869
+	births: 	11020
+	deaths: 	1639
+	resource: 	106578.446746
+	fish moved: 	21855
+	fish caught: 	1300
+	average dpop/dt: 	236.253333
+	average population: 	84730.460000
+30-day period '# 15:
+	population: 	113858
+	mature population: 	64273
+	births: 	9066
+	deaths: 	1522
+	resource: 	106716.222443
+	fish moved: 	16009
+	fish caught: 	1242
+	average dpop/dt: 	237.204167
+	average population: 	86332.175000
+30-day period '# 16:
+	population: 	119820
+	mature population: 	65769
+	births: 	7236
+	deaths: 	1274
+	resource: 	106023.941940
+	fish moved: 	12323
+	fish caught: 	1089
+	average dpop/dt: 	234.941176
+	average population: 	88141.976471
+30-day period '# 17:
+	population: 	123945
+	mature population: 	66261
+	births: 	5372
+	deaths: 	1247
+	resource: 	106201.405502
+	fish moved: 	7859
+	fish caught: 	1079
+	average dpop/dt: 	229.527778
+	average population: 	90028.992593
+30-day period '# 18:
+	population: 	126724
+	mature population: 	66308
+	births: 	3928
+	deaths: 	1149
+	resource: 	106131.886147
+	fish moved: 	6145
+	fish caught: 	1002
+	average dpop/dt: 	222.322807
+	average population: 	91894.208772
+30-day period '# 19:
+	population: 	128485
+	mature population: 	66019
+	births: 	2838
+	deaths: 	1077
+	resource: 	105924.350676
+	fish moved: 	4311
+	fish caught: 	966
+	average dpop/dt: 	214.141667
+	average population: 	93684.295000
+30-day period '# 20:
+	population: 	129789
+	mature population: 	65784
+	births: 	2198
+	deaths: 	894
+	resource: 	106421.085698
+	fish moved: 	2917
+	fish caught: 	779
+	average dpop/dt: 	206.014286
+	average population: 	95373.461905
+30-day period '# 21:
+	population: 	130371
+	mature population: 	65455
+	births: 	1484
+	deaths: 	902
+	resource: 	106525.626848
+	fish moved: 	3484
+	fish caught: 	816
+	average dpop/dt: 	197.531818
+	average population: 	96953.621212
+30-day period '# 22:
+	population: 	130894
+	mature population: 	65325
+	births: 	1192
+	deaths: 	669
+	resource: 	105920.230075
+	fish moved: 	1964
+	fish caught: 	566
+	average dpop/dt: 	189.701449
+	average population: 	98417.540580
+30-day period '# 23:
+	population: 	131196
+	mature population: 	65139
+	births: 	1032
+	deaths: 	730
+	resource: 	105866.504867
+	fish moved: 	1684
+	fish caught: 	671
+	average dpop/dt: 	182.216667
+	average population: 	99778.401389
+30-day period '# 24:
+	population: 	149743
+	mature population: 	71648
+	births: 	20516
+	deaths: 	1969
+	resource: 	104044.944002
+	fish moved: 	98018
+	fish caught: 	877
+	average dpop/dt: 	199.657333
+	average population: 	101308.137333
+30-day period '# 25:
+	population: 	170777
+	mature population: 	82725
+	births: 	22924
+	deaths: 	1890
+	resource: 	104442.296203
+	fish moved: 	74410
+	fish caught: 	814
+	average dpop/dt: 	218.944872
+	average population: 	103603.814103
+30-day period '# 26:
+	population: 	188164
+	mature population: 	93133
+	births: 	18804
+	deaths: 	1417
+	resource: 	105521.216335
+	fish moved: 	63120
+	fish caught: 	688
+	average dpop/dt: 	232.301235
+	average population: 	106434.104938
+30-day period '# 27:
+	population: 	202738
+	mature population: 	102010
+	births: 	15496
+	deaths: 	922
+	resource: 	104701.950194
+	fish moved: 	54688
+	fish caught: 	437
+	average dpop/dt: 	241.354762
+	average population: 	109630.026190
+30-day period '# 28:
+	population: 	214456
+	mature population: 	108890
+	births: 	12512
+	deaths: 	794
+	resource: 	104852.503013
+	fish moved: 	44465
+	fish caught: 	427
+	average dpop/dt: 	246.501149
+	average population: 	113056.313793
+30-day period '# 29:
+	population: 	223722
+	mature population: 	114126
+	births: 	9842
+	deaths: 	576
+	resource: 	104927.670946
+	fish moved: 	43135
+	fish caught: 	366
+	average dpop/dt: 	248.580000
+	average population: 	116603.263333
+30-day period '# 30:
+	population: 	231213
+	mature population: 	117926
+	births: 	7920
+	deaths: 	429
+	resource: 	104369.590675
+	fish moved: 	35430
+	fish caught: 	250
+	average dpop/dt: 	248.616129
+	average population: 	120189.587097
+30-day period '# 31:
+	population: 	236962
+	mature population: 	120613
+	births: 	6056
+	deaths: 	307
+	resource: 	104054.210080
+	fish moved: 	29522
+	fish caught: 	183
+	average dpop/dt: 	246.835417
+	average population: 	123757.282292
+30-day period '# 32:
+	population: 	241205
+	mature population: 	122753
+	births: 	4454
+	deaths: 	211
+	resource: 	105165.213370
+	fish moved: 	26698
+	fish caught: 	133
+	average dpop/dt: 	243.641414
+	average population: 	127257.067677
+30-day period '# 33:
+	population: 	244278
+	mature population: 	124221
+	births: 	3232
+	deaths: 	159
+	resource: 	104430.162225
+	fish moved: 	23299
+	fish caught: 	104
+	average dpop/dt: 	239.488235
+	average population: 	130657.834314
+30-day period '# 34:
+	population: 	246620
+	mature population: 	125355
+	births: 	2442
+	deaths: 	100
+	resource: 	104264.716675
+	fish moved: 	23969
+	fish caught: 	77
+	average dpop/dt: 	234.876190
+	average population: 	133939.921905
+30-day period '# 35:
+	population: 	248264
+	mature population: 	126336
+	births: 	1728
+	deaths: 	84
+	resource: 	104117.774528
+	fish moved: 	21076
+	fish caught: 	71
+	average dpop/dt: 	229.874074
+	average population: 	137094.392593
+30-day period '# 36:
+	population: 	253015
+	mature population: 	143045
+	births: 	28402
+	deaths: 	23651
+	resource: 	36.228157
+	fish moved: 	9
+	fish caught: 	93
+	average dpop/dt: 	227.941441
+	average population: 	140194.539640
+30-day period '# 37:
+	population: 	3278
+	mature population: 	6
+	births: 	13018
+	deaths: 	262755
+	resource: 	107150.501214
+	fish moved: 	0
+	fish caught: 	17
+	average dpop/dt: 	2.875439
+	average population: 	138436.874561
+30-day period '# 38:
+	population: 	3278
+	mature population: 	11
+	births: 	0
+	deaths: 	0
+	resource: 	107144.141119
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	2.801709
+	average population: 	134971.262393
+30-day period '# 39:
+	population: 	3278
+	mature population: 	13
+	births: 	0
+	deaths: 	0
+	resource: 	106801.385252
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	2.731667
+	average population: 	131678.930833
+30-day period '# 40:
+	population: 	3278
+	mature population: 	15
+	births: 	0
+	deaths: 	0
+	resource: 	107777.677235
+	fish moved: 	4
+	fish caught: 	0
+	average dpop/dt: 	2.665041
+	average population: 	128547.200813
+30-day period '# 41:
+	population: 	3278
+	mature population: 	19
+	births: 	0
+	deaths: 	0
+	resource: 	107608.020302
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	2.601587
+	average population: 	125564.600794
+30-day period '# 42:
+	population: 	3278
+	mature population: 	30
+	births: 	0
+	deaths: 	0
+	resource: 	107667.217802
+	fish moved: 	9
+	fish caught: 	0
+	average dpop/dt: 	2.541085
+	average population: 	122720.726357
+30-day period '# 43:
+	population: 	3278
+	mature population: 	39
+	births: 	0
+	deaths: 	0
+	resource: 	108009.224528
+	fish moved: 	9
+	fish caught: 	0
+	average dpop/dt: 	2.483333
+	average population: 	120006.118939
+30-day period '# 44:
+	population: 	3278
+	mature population: 	64
+	births: 	0
+	deaths: 	0
+	resource: 	107230.398478
+	fish moved: 	22
+	fish caught: 	0
+	average dpop/dt: 	2.428148
+	average population: 	117412.160741
+30-day period '# 45:
+	population: 	3278
+	mature population: 	100
+	births: 	0
+	deaths: 	0
+	resource: 	107570.985041
+	fish moved: 	26
+	fish caught: 	0
+	average dpop/dt: 	2.375362
+	average population: 	114930.983333
+30-day period '# 46:
+	population: 	3278
+	mature population: 	149
+	births: 	0
+	deaths: 	0
+	resource: 	107098.521007
+	fish moved: 	49
+	fish caught: 	0
+	average dpop/dt: 	2.324823
+	average population: 	112555.387943
+30-day period '# 47:
+	population: 	3282
+	mature population: 	263
+	births: 	4
+	deaths: 	0
+	resource: 	107822.092209
+	fish moved: 	80
+	fish caught: 	0
+	average dpop/dt: 	2.279167
+	average population: 	110278.789583
+30-day period '# 48:
+	population: 	3362
+	mature population: 	1189
+	births: 	80
+	deaths: 	0
+	resource: 	107785.659574
+	fish moved: 	1325
+	fish caught: 	0
+	average dpop/dt: 	2.287075
+	average population: 	108095.539456
+30-day period '# 49:
+	population: 	3818
+	mature population: 	3278
+	births: 	456
+	deaths: 	0
+	resource: 	107770.436487
+	fish moved: 	769
+	fish caught: 	0
+	average dpop/dt: 	2.545333
+	average population: 	106005.222000
+30-day period '# 50:
+	population: 	4228
+	mature population: 	3278
+	births: 	410
+	deaths: 	0
+	resource: 	107961.734198
+	fish moved: 	200
+	fish caught: 	0
+	average dpop/dt: 	2.763399
+	average population: 	104006.012418
+30-day period '# 51:
+	population: 	4566
+	mature population: 	3278
+	births: 	338
+	deaths: 	0
+	resource: 	107357.050534
+	fish moved: 	53
+	fish caught: 	0
+	average dpop/dt: 	2.926923
+	average population: 	102090.742949
+30-day period '# 52:
+	population: 	4822
+	mature population: 	3278
+	births: 	256
+	deaths: 	0
+	resource: 	107640.485371
+	fish moved: 	4
+	fish caught: 	0
+	average dpop/dt: 	3.032704
+	average population: 	100253.322642
+30-day period '# 53:
+	population: 	5032
+	mature population: 	3278
+	births: 	210
+	deaths: 	0
+	resource: 	107427.388447
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	3.106173
+	average population: 	98488.104321
+30-day period '# 54:
+	population: 	5190
+	mature population: 	3278
+	births: 	158
+	deaths: 	0
+	resource: 	107331.962443
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	3.145455
+	average population: 	96790.519394
+30-day period '# 55:
+	population: 	5344
+	mature population: 	3278
+	births: 	154
+	deaths: 	0
+	resource: 	107352.276362
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	3.180952
+	average population: 	95156.202976
+30-day period '# 56:
+	population: 	5462
+	mature population: 	3278
+	births: 	118
+	deaths: 	0
+	resource: 	108135.956730
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	3.194152
+	average population: 	93581.678947
+30-day period '# 57:
+	population: 	5566
+	mature population: 	3278
+	births: 	104
+	deaths: 	0
+	resource: 	108002.264885
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	3.198851
+	average population: 	92063.236207
+30-day period '# 58:
+	population: 	5654
+	mature population: 	3278
+	births: 	88
+	deaths: 	0
+	resource: 	108424.090368
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	3.194350
+	average population: 	90598.000565
+30-day period '# 59:
+	population: 	5724
+	mature population: 	3278
+	births: 	70
+	deaths: 	0
+	resource: 	107598.941455
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	3.180000
+	average population: 	89182.870556
+30-day period '# 60:
+	population: 	5898
+	mature population: 	3326
+	births: 	174
+	deaths: 	0
+	resource: 	107611.194649
+	fish moved: 	2203
+	fish caught: 	0
+	average dpop/dt: 	3.222951
+	average population: 	87815.520765
+30-day period '# 61:
+	population: 	6688
+	mature population: 	3726
+	births: 	790
+	deaths: 	0
+	resource: 	107844.838239
+	fish moved: 	515
+	fish caught: 	0
+	average dpop/dt: 	3.595699
+	average population: 	86500.579032
+30-day period '# 62:
+	population: 	7466
+	mature population: 	4172
+	births: 	778
+	deaths: 	0
+	resource: 	107309.266435
+	fish moved: 	169
+	fish caught: 	0
+	average dpop/dt: 	3.950265
+	average population: 	85240.249206
+30-day period '# 63:
+	population: 	8132
+	mature population: 	4504
+	births: 	666
+	deaths: 	0
+	resource: 	107844.565475
+	fish moved: 	113
+	fish caught: 	0
+	average dpop/dt: 	4.235417
+	average population: 	84030.653646
+30-day period '# 64:
+	population: 	8676
+	mature population: 	4792
+	births: 	544
+	deaths: 	0
+	resource: 	107258.219995
+	fish moved: 	28
+	fish caught: 	0
+	average dpop/dt: 	4.449231
+	average population: 	82867.445641
+30-day period '# 65:
+	population: 	9118
+	mature population: 	4986
+	births: 	442
+	deaths: 	0
+	resource: 	107473.740411
+	fish moved: 	8
+	fish caught: 	0
+	average dpop/dt: 	4.605051
+	average population: 	81746.801515
+30-day period '# 66:
+	population: 	9490
+	mature population: 	5170
+	births: 	372
+	deaths: 	0
+	resource: 	107623.454490
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	4.721393
+	average population: 	80665.941791
+30-day period '# 67:
+	population: 	9844
+	mature population: 	5322
+	births: 	354
+	deaths: 	0
+	resource: 	107856.717984
+	fish moved: 	73
+	fish caught: 	0
+	average dpop/dt: 	4.825490
+	average population: 	79622.078922
+30-day period '# 68:
+	population: 	10172
+	mature population: 	5442
+	births: 	328
+	deaths: 	0
+	resource: 	107147.520227
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	4.914010
+	average population: 	78613.361836
+30-day period '# 69:
+	population: 	10420
+	mature population: 	5552
+	births: 	248
+	deaths: 	0
+	resource: 	107645.601469
+	fish moved: 	4
+	fish caught: 	0
+	average dpop/dt: 	4.961905
+	average population: 	77637.571905
+30-day period '# 70:
+	population: 	10608
+	mature population: 	5638
+	births: 	188
+	deaths: 	0
+	resource: 	107791.104601
+	fish moved: 	12
+	fish caught: 	0
+	average dpop/dt: 	4.980282
+	average population: 	76692.292488
+30-day period '# 71:
+	population: 	10746
+	mature population: 	5714
+	births: 	138
+	deaths: 	0
+	resource: 	106882.948362
+	fish moved: 	8
+	fish caught: 	0
+	average dpop/dt: 	4.975000
+	average population: 	75775.460648
+30-day period '# 72:
+	population: 	10874
+	mature population: 	5782
+	births: 	128
+	deaths: 	0
+	resource: 	107274.216817
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	4.965297
+	average population: 	74885.660731
+30-day period '# 73:
+	population: 	12714
+	mature population: 	6572
+	births: 	1840
+	deaths: 	0
+	resource: 	107044.044995
+	fish moved: 	180
+	fish caught: 	0
+	average dpop/dt: 	5.727027
+	average population: 	74033.761712
+30-day period '# 74:
+	population: 	14153
+	mature population: 	7346
+	births: 	1440
+	deaths: 	1
+	resource: 	107103.331267
+	fish moved: 	302
+	fish caught: 	0
+	average dpop/dt: 	6.290222
+	average population: 	73226.532000
+30-day period '# 75:
+	population: 	15440
+	mature population: 	8024
+	births: 	1288
+	deaths: 	1
+	resource: 	107576.220530
+	fish moved: 	189
+	fish caught: 	0
+	average dpop/dt: 	6.771930
+	average population: 	72458.195175
+30-day period '# 76:
+	population: 	16498
+	mature population: 	8592
+	births: 	1058
+	deaths: 	0
+	resource: 	107659.338026
+	fish moved: 	146
+	fish caught: 	0
+	average dpop/dt: 	7.141991
+	average population: 	71725.245455
+30-day period '# 77:
+	population: 	17394
+	mature population: 	9049
+	births: 	896
+	deaths: 	0
+	resource: 	107205.742945
+	fish moved: 	157
+	fish caught: 	0
+	average dpop/dt: 	7.433333
+	average population: 	71023.148291
+30-day period '# 78:
+	population: 	18238
+	mature population: 	9443
+	births: 	844
+	deaths: 	0
+	resource: 	107084.970132
+	fish moved: 	348
+	fish caught: 	0
+	average dpop/dt: 	7.695359
+	average population: 	70349.851899
+30-day period '# 79:
+	population: 	18828
+	mature population: 	9799
+	births: 	590
+	deaths: 	0
+	resource: 	107858.821586
+	fish moved: 	304
+	fish caught: 	0
+	average dpop/dt: 	7.845000
+	average population: 	69702.293750
+30-day period '# 80:
+	population: 	19420
+	mature population: 	10124
+	births: 	592
+	deaths: 	0
+	resource: 	106889.148730
+	fish moved: 	293
+	fish caught: 	0
+	average dpop/dt: 	7.991770
+	average population: 	69078.115638
+30-day period '# 81:
+	population: 	19918
+	mature population: 	10384
+	births: 	498
+	deaths: 	0
+	resource: 	108098.612742
+	fish moved: 	256
+	fish caught: 	0
+	average dpop/dt: 	8.096748
+	average population: 	68475.716667
+30-day period '# 82:
+	population: 	20336
+	mature population: 	10583
+	births: 	418
+	deaths: 	0
+	resource: 	106819.479977
+	fish moved: 	286
+	fish caught: 	0
+	average dpop/dt: 	8.167068
+	average population: 	67893.307229
+30-day period '# 83:
+	population: 	20676
+	mature population: 	10722
+	births: 	340
+	deaths: 	0
+	resource: 	107116.986551
+	fish moved: 	176
+	fish caught: 	0
+	average dpop/dt: 	8.204762
+	average population: 	67329.256746
+30-day period '# 84:
+	population: 	20926
+	mature population: 	10873
+	births: 	250
+	deaths: 	0
+	resource: 	107604.833857
+	fish moved: 	197
+	fish caught: 	0
+	average dpop/dt: 	8.206275
+	average population: 	66781.983137
+30-day period '# 85:
+	population: 	24167
+	mature population: 	12449
+	births: 	3242
+	deaths: 	1
+	resource: 	106643.970379
+	fish moved: 	1942
+	fish caught: 	0
+	average dpop/dt: 	9.367054
+	average population: 	66265.835271
+30-day period '# 86:
+	population: 	27244
+	mature population: 	13960
+	births: 	3082
+	deaths: 	5
+	resource: 	107866.608240
+	fish moved: 	1578
+	fish caught: 	0
+	average dpop/dt: 	10.438314
+	average population: 	65800.664368
+30-day period '# 87:
+	population: 	29792
+	mature population: 	15235
+	births: 	2550
+	deaths: 	2
+	resource: 	106854.168424
+	fish moved: 	1377
+	fish caught: 	0
+	average dpop/dt: 	11.284848
+	average population: 	65378.412500
+30-day period '# 88:
+	population: 	31953
+	mature population: 	16343
+	births: 	2164
+	deaths: 	3
+	resource: 	107071.525716
+	fish moved: 	1519
+	fish caught: 	0
+	average dpop/dt: 	11.967416
+	average population: 	64991.223221
+30-day period '# 89:
+	population: 	33735
+	mature population: 	17273
+	births: 	1784
+	deaths: 	2
+	resource: 	107627.762786
+	fish moved: 	1379
+	fish caught: 	0
+	average dpop/dt: 	12.494444
+	average population: 	64634.920000
+30-day period '# 90:
+	population: 	35202
+	mature population: 	18099
+	births: 	1468
+	deaths: 	1
+	resource: 	107585.647509
+	fish moved: 	1251
+	fish caught: 	0
+	average dpop/dt: 	12.894505
+	average population: 	64303.734432
+30-day period '# 91:
+	population: 	36521
+	mature population: 	18728
+	births: 	1320
+	deaths: 	1
+	resource: 	107624.977444
+	fish moved: 	1222
+	fish caught: 	0
+	average dpop/dt: 	13.232246
+	average population: 	63995.013406
+30-day period '# 92:
+	population: 	37614
+	mature population: 	19332
+	births: 	1094
+	deaths: 	1
+	resource: 	106492.265879
+	fish moved: 	1115
+	fish caught: 	0
+	average dpop/dt: 	13.481720
+	average population: 	63705.931183
+30-day period '# 93:
+	population: 	38517
+	mature population: 	19845
+	births: 	904
+	deaths: 	1
+	resource: 	106550.734416
+	fish moved: 	1276
+	fish caught: 	0
+	average dpop/dt: 	13.658511
+	average population: 	63433.401418
+30-day period '# 94:
+	population: 	39293
+	mature population: 	20278
+	births: 	776
+	deaths: 	0
+	resource: 	106644.947819
+	fish moved: 	891
+	fish caught: 	0
+	average dpop/dt: 	13.787018
+	average population: 	63175.472281
+30-day period '# 95:
+	population: 	39968
+	mature population: 	20623
+	births: 	676
+	deaths: 	1
+	resource: 	108249.855496
+	fish moved: 	731
+	fish caught: 	0
+	average dpop/dt: 	13.877778
+	average population: 	62930.475347
+30-day period '# 96:
+	population: 	40504
+	mature population: 	20883
+	births: 	536
+	deaths: 	0
+	resource: 	107120.070654
+	fish moved: 	544
+	fish caught: 	0
+	average dpop/dt: 	13.918900
+	average population: 	62696.712371
+30-day period '# 97:
+	population: 	45902
+	mature population: 	23616
+	births: 	5418
+	deaths: 	20
+	resource: 	107481.581788
+	fish moved: 	11212
+	fish caught: 	0
+	average dpop/dt: 	15.612925
+	average population: 	62490.362585
+30-day period '# 98:
+	population: 	52624
+	mature population: 	26789
+	births: 	6746
+	deaths: 	24
+	resource: 	106472.150638
+	fish moved: 	8023
+	fish caught: 	0
+	average dpop/dt: 	17.718519
+	average population: 	62358.823906
+30-day period '# 99:
+	population: 	58181
+	mature population: 	29456
+	births: 	5580
+	deaths: 	23
+	resource: 	106743.837716
+	fish moved: 	5740
+	fish caught: 	0
+	average dpop/dt: 	19.393667
+	average population: 	62291.625000
+30-day period '# 100:
+	population: 	62628
+	mature population: 	31610
+	births: 	4464
+	deaths: 	17
+	resource: 	106996.683651
+	fish moved: 	5411
+	fish caught: 	0
+	average dpop/dt: 	20.669307
+	average population: 	62274.183828
+30-day period '# 101:
+	population: 	66326
+	mature population: 	33524
+	births: 	3714
+	deaths: 	16
+	resource: 	107358.224716
+	fish moved: 	5924
+	fish caught: 	0
+	average dpop/dt: 	21.675163
+	average population: 	62296.757843
+30-day period '# 102:
+	population: 	69294
+	mature population: 	34964
+	births: 	2976
+	deaths: 	8
+	resource: 	106859.755065
+	fish moved: 	5237
+	fish caught: 	0
+	average dpop/dt: 	22.425243
+	average population: 	62351.774757
+30-day period '# 103:
+	population: 	71873
+	mature population: 	36330
+	births: 	2584
+	deaths: 	5
+	resource: 	107005.312234
+	fish moved: 	4474
+	fish caught: 	0
+	average dpop/dt: 	23.036218
+	average population: 	62431.729808
+30-day period '# 104:
+	population: 	73964
+	mature population: 	37463
+	births: 	2092
+	deaths: 	1
+	resource: 	106179.368982
+	fish moved: 	4603
+	fish caught: 	0
+	average dpop/dt: 	23.480635
+	average population: 	62532.209524
+30-day period '# 105:
+	population: 	75704
+	mature population: 	38361
+	births: 	1742
+	deaths: 	2
+	resource: 	106304.132103
+	fish moved: 	3526
+	fish caught: 	0
+	average dpop/dt: 	23.806289
+	average population: 	62648.919497
+30-day period '# 106:
+	population: 	77059
+	mature population: 	39179
+	births: 	1356
+	deaths: 	1
+	resource: 	106918.508096
+	fish moved: 	3718
+	fish caught: 	0
+	average dpop/dt: 	24.005919
+	average population: 	62777.652648
+30-day period '# 107:
+	population: 	78287
+	mature population: 	39889
+	births: 	1228
+	deaths: 	0
+	resource: 	106618.085780
+	fish moved: 	3267
+	fish caught: 	0
+	average dpop/dt: 	24.162654
+	average population: 	62915.894136
+30-day period '# 108:
+	population: 	79311
+	mature population: 	40435
+	births: 	1026
+	deaths: 	2
+	resource: 	106801.296182
+	fish moved: 	2376
+	fish caught: 	0
+	average dpop/dt: 	24.254128
+	average population: 	63061.755352
+30-day period '# 109:
+	population: 	88357
+	mature population: 	44672
+	births: 	9198
+	deaths: 	152
+	resource: 	106520.798831
+	fish moved: 	47104
+	fish caught: 	0
+	average dpop/dt: 	26.774848
+	average population: 	63233.668182
+30-day period '# 110:
+	population: 	102995
+	mature population: 	51707
+	births: 	14932
+	deaths: 	294
+	resource: 	107403.772657
+	fish moved: 	31800
+	fish caught: 	0
+	average dpop/dt: 	30.929429
+	average population: 	63530.691291
+30-day period '# 111:
+	population: 	114910
+	mature population: 	57469
+	births: 	12096
+	deaths: 	181
+	resource: 	106286.466585
+	fish moved: 	31420
+	fish caught: 	0
+	average dpop/dt: 	34.199405
+	average population: 	63940.115476
+30-day period '# 112:
+	population: 	124290
+	mature population: 	62025
+	births: 	9498
+	deaths: 	118
+	resource: 	106346.568638
+	fish moved: 	24461
+	fish caught: 	0
+	average dpop/dt: 	36.663717
+	average population: 	64435.483481
+30-day period '# 113:
+	population: 	131857
+	mature population: 	65813
+	births: 	7634
+	deaths: 	67
+	resource: 	106409.153274
+	fish moved: 	19538
+	fish caught: 	0
+	average dpop/dt: 	38.554678
+	average population: 	64995.830702
+30-day period '# 114:
+	population: 	137895
+	mature population: 	68928
+	births: 	6088
+	deaths: 	50
+	resource: 	106505.108643
+	fish moved: 	16571
+	fish caught: 	0
+	average dpop/dt: 	39.969565
+	average population: 	65604.664638
+30-day period '# 115:
+	population: 	142697
+	mature population: 	71546
+	births: 	4852
+	deaths: 	50
+	resource: 	105812.045438
+	fish moved: 	14522
+	fish caught: 	0
+	average dpop/dt: 	41.004885
+	average population: 	66249.975000
+30-day period '# 116:
+	population: 	146469
+	mature population: 	73681
+	births: 	3798
+	deaths: 	26
+	resource: 	106005.575448
+	fish moved: 	14195
+	fish caught: 	0
+	average dpop/dt: 	41.729060
+	average population: 	66920.390883
+30-day period '# 117:
+	population: 	149714
+	mature population: 	75517
+	births: 	3258
+	deaths: 	13
+	resource: 	106453.411727
+	fish moved: 	13294
+	fish caught: 	0
+	average dpop/dt: 	42.292090
+	average population: 	67609.431356
+30-day period '# 118:
+	population: 	152147
+	mature population: 	76870
+	births: 	2452
+	deaths: 	19
+	resource: 	106379.278094
+	fish moved: 	10623
+	fish caught: 	0
+	average dpop/dt: 	42.618207
+	average population: 	68310.217087
+30-day period '# 119:
+	population: 	154208
+	mature population: 	78110
+	births: 	2072
+	deaths: 	11
+	resource: 	106000.715817
+	fish moved: 	10006
+	fish caught: 	0
+	average dpop/dt: 	42.835556
+	average population: 	69018.271944
+30-day period '# 120:
+	population: 	155833
+	mature population: 	79185
+	births: 	1630
+	deaths: 	5
+	resource: 	105277.009671
+	fish moved: 	9500
+	fish caught: 	0
+	average dpop/dt: 	42.929201
+	average population: 	69729.442700
+30-day period '# 121:
+	population: 	169093
+	mature population: 	86088
+	births: 	14078
+	deaths: 	818
+	resource: 	102905.584899
+	fish moved: 	159652
+	fish caught: 	0
+	average dpop/dt: 	46.200273
+	average population: 	70459.393169
+30-day period '# 122:
+	population: 	200157
+	mature population: 	101285
+	births: 	33180
+	deaths: 	2116
+	resource: 	102898.577953
+	fish moved: 	120142
+	fish caught: 	0
+	average dpop/dt: 	54.243089
+	average population: 	71396.767480
+30-day period '# 123:
+	population: 	225410
+	mature population: 	113531
+	births: 	26696
+	deaths: 	1443
+	resource: 	103762.599263
+	fish moved: 	94251
+	fish caught: 	0
+	average dpop/dt: 	60.594086
+	average population: 	72544.853763
+30-day period '# 124:
+	population: 	245232
+	mature population: 	123226
+	births: 	20800
+	deaths: 	978
+	resource: 	103635.975031
+	fish moved: 	76648
+	fish caught: 	0
+	average dpop/dt: 	65.395200
+	average population: 	73852.860533
+30-day period '# 125:
+	population: 	260604
+	mature population: 	131021
+	births: 	15940
+	deaths: 	568
+	resource: 	103333.888170
+	fish moved: 	68304
+	fish caught: 	0
+	average dpop/dt: 	68.942857
+	average population: 	75279.136243
+30-day period '# 126:
+	population: 	272432
+	mature population: 	137187
+	births: 	12214
+	deaths: 	386
+	resource: 	102766.366544
+	fish moved: 	55448
+	fish caught: 	0
+	average dpop/dt: 	71.504462
+	average population: 	76788.681365
+30-day period '# 127:
+	population: 	281426
+	mature population: 	142153
+	births: 	9234
+	deaths: 	240
+	resource: 	104680.622403
+	fish moved: 	52904
+	fish caught: 	0
+	average dpop/dt: 	73.288021
+	average population: 	78355.192708
+30-day period '# 128:
+	population: 	288242
+	mature population: 	146113
+	births: 	6974
+	deaths: 	158
+	resource: 	104032.904953
+	fish moved: 	55476
+	fish caught: 	0
+	average dpop/dt: 	74.481137
+	average population: 	79957.963824
+30-day period '# 129:
+	population: 	293659
+	mature population: 	149398
+	births: 	5532
+	deaths: 	115
+	resource: 	103719.540490
+	fish moved: 	49078
+	fish caught: 	0
+	average dpop/dt: 	75.297179
+	average population: 	81582.848718
+30-day period '# 130:
+	population: 	297636
+	mature population: 	151882
+	births: 	4048
+	deaths: 	71
+	resource: 	102752.403079
+	fish moved: 	49127
+	fish caught: 	0
+	average dpop/dt: 	75.734351
+	average population: 	83218.013486
+30-day period '# 131:
+	population: 	300784
+	mature population: 	154016
+	births: 	3200
+	deaths: 	52
+	resource: 	102509.059875
+	fish moved: 	45119
+	fish caught: 	0
+	average dpop/dt: 	75.955556
+	average population: 	84855.055556
+30-day period '# 132:
+	population: 	303277
+	mature population: 	155680
+	births: 	2522
+	deaths: 	29
+	resource: 	102320.687820
+	fish moved: 	36714
+	fish caught: 	0
+	average dpop/dt: 	76.009273
+	average population: 	86488.800501
+30-day period '# 133:
+	population: 	311068
+	mature population: 	165909
+	births: 	15732
+	deaths: 	7941
+	resource: 	395.793638
+	fish moved: 	3892
+	fish caught: 	0
+	average dpop/dt: 	77.380100
+	average population: 	88121.299502
+30-day period '# 134:
+	population: 	3238
+	mature population: 	2
+	births: 	30222
+	deaths: 	338052
+	resource: 	87982.483583
+	fish moved: 	2
+	fish caught: 	0
+	average dpop/dt: 	0.799506
+	average population: 	88714.299012
+30-day period '# 135:
+	population: 	3238
+	mature population: 	4
+	births: 	0
+	deaths: 	0
+	resource: 	107403.889591
+	fish moved: 	1
+	fish caught: 	0
+	average dpop/dt: 	0.793627
+	average population: 	88085.796814
+30-day period '# 136:
+	population: 	3238
+	mature population: 	5
+	births: 	0
+	deaths: 	0
+	resource: 	107892.723992
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	0.787835
+	average population: 	87466.469830
+30-day period '# 137:
+	population: 	3238
+	mature population: 	7
+	births: 	0
+	deaths: 	0
+	resource: 	107830.311840
+	fish moved: 	4
+	fish caught: 	0
+	average dpop/dt: 	0.782126
+	average population: 	86856.118599
+30-day period '# 138:
+	population: 	3238
+	mature population: 	14
+	births: 	0
+	deaths: 	0
+	resource: 	107381.068927
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	0.776499
+	average population: 	86254.549400
+30-day period '# 139:
+	population: 	3238
+	mature population: 	19
+	births: 	0
+	deaths: 	0
+	resource: 	107283.423947
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	0.770952
+	average population: 	85661.574048
+30-day period '# 140:
+	population: 	3238
+	mature population: 	26
+	births: 	0
+	deaths: 	0
+	resource: 	107477.903330
+	fish moved: 	5
+	fish caught: 	0
+	average dpop/dt: 	0.765485
+	average population: 	85077.009693
+30-day period '# 141:
+	population: 	3238
+	mature population: 	39
+	births: 	0
+	deaths: 	0
+	resource: 	107953.039406
+	fish moved: 	4
+	fish caught: 	0
+	average dpop/dt: 	0.760094
+	average population: 	84500.678638
+30-day period '# 142:
+	population: 	3238
+	mature population: 	72
+	births: 	0
+	deaths: 	0
+	resource: 	107919.879914
+	fish moved: 	27
+	fish caught: 	0
+	average dpop/dt: 	0.754779
+	average population: 	83932.408159
+30-day period '# 143:
+	population: 	3240
+	mature population: 	123
+	births: 	2
+	deaths: 	0
+	resource: 	107426.825344
+	fish moved: 	24
+	fish caught: 	0
+	average dpop/dt: 	0.750000
+	average population: 	83372.031250
+30-day period '# 144:
+	population: 	3244
+	mature population: 	241
+	births: 	4
+	deaths: 	0
+	resource: 	107081.140949
+	fish moved: 	97
+	fish caught: 	0
+	average dpop/dt: 	0.745747
+	average population: 	82819.406667
+30-day period '# 145:
+	population: 	3258
+	mature population: 	698
+	births: 	14
+	deaths: 	0
+	resource: 	107114.598495
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	0.743836
+	average population: 	82274.420776
+30-day period '# 146:
+	population: 	3656
+	mature population: 	3238
+	births: 	398
+	deaths: 	0
+	resource: 	106268.967503
+	fish moved: 	1621
+	fish caught: 	0
+	average dpop/dt: 	0.829025
+	average population: 	81737.997506
+30-day period '# 147:
+	population: 	4102
+	mature population: 	3238
+	births: 	446
+	deaths: 	0
+	resource: 	107564.461026
+	fish moved: 	232
+	fish caught: 	0
+	average dpop/dt: 	0.923874
+	average population: 	81212.015541
+30-day period '# 148:
+	population: 	4470
+	mature population: 	3238
+	births: 	368
+	deaths: 	0
+	resource: 	107764.054714
+	fish moved: 	59
+	fish caught: 	0
+	average dpop/dt: 	1.000000
+	average population: 	80695.870917
+30-day period '# 149:
+	population: 	4758
+	mature population: 	3238
+	births: 	288
+	deaths: 	0
+	resource: 	107843.165093
+	fish moved: 	12
+	fish caught: 	0
+	average dpop/dt: 	1.057333
+	average population: 	80188.726000
+30-day period '# 150:
+	population: 	5038
+	mature population: 	3238
+	births: 	280
+	deaths: 	0
+	resource: 	107489.686891
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	1.112141
+	average population: 	79690.221854
+30-day period '# 151:
+	population: 	5246
+	mature population: 	3238
+	births: 	208
+	deaths: 	0
+	resource: 	107552.383380
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	1.150439
+	average population: 	79199.821272
+30-day period '# 152:
+	population: 	5364
+	mature population: 	3238
+	births: 	118
+	deaths: 	0
+	resource: 	107609.305538
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	1.168627
+	average population: 	78716.841176
+30-day period '# 153:
+	population: 	5484
+	mature population: 	3238
+	births: 	120
+	deaths: 	0
+	resource: 	106996.837530
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	1.187013
+	average population: 	78240.961255
+30-day period '# 154:
+	population: 	5598
+	mature population: 	3238
+	births: 	114
+	deaths: 	0
+	resource: 	107193.165655
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	1.203871
+	average population: 	77771.951613
+30-day period '# 155:
+	population: 	5676
+	mature population: 	3238
+	births: 	78
+	deaths: 	0
+	resource: 	107875.314967
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	1.212821
+	average population: 	77309.551068
+30-day period '# 156:
+	population: 	5762
+	mature population: 	3242
+	births: 	86
+	deaths: 	0
+	resource: 	108059.377049
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	1.223355
+	average population: 	76853.605308
+30-day period '# 157:
+	population: 	5816
+	mature population: 	3256
+	births: 	54
+	deaths: 	0
+	resource: 	107656.912532
+	fish moved: 	0
+	fish caught: 	0
+	average dpop/dt: 	1.227004
+	average population: 	76403.848734
+30-day period '# 158:
+	population: 	6520
+	mature population: 	3572
+	births: 	704
+	deaths: 	0
+	resource: 	107480.666946
+	fish moved: 	1008
+	fish caught: 	0
+	average dpop/dt: 	1.366876
+	average population: 	75961.828302
+30-day period '# 159:
+	population: 	7330
+	mature population: 	4036
+	births: 	810
+	deaths: 	0
+	resource: 	106733.019526
+	fish moved: 	329
+	fish caught: 	0
+	average dpop/dt: 	1.527083
+	average population: 	75530.481875
+30-day period '# 160:
+	population: 	8068
+	mature population: 	4426
+	births: 	738
+	deaths: 	0
+	resource: 	107201.852737
+	fish moved: 	164
+	fish caught: 	0
+	average dpop/dt: 	1.670393
+	average population: 	75109.396480
+30-day period '# 161:
+	population: 	8672
+	mature population: 	4716
+	births: 	604
+	deaths: 	0
+	resource: 	108259.930751
+	fish moved: 	37
+	fish caught: 	0
+	average dpop/dt: 	1.784362
+	average population: 	74697.531893
+30-day period '# 162:
+	population: 	9224
+	mature population: 	5006
+	births: 	552
+	deaths: 	0
+	resource: 	107897.501307
+	fish moved: 	13
+	fish caught: 	0
+	average dpop/dt: 	1.886299
+	average population: 	74294.116769
+30-day period '# 163:
+	population: 	9694
+	mature population: 	5212
+	births: 	470
+	deaths: 	0
+	resource: 	107014.480466
+	fish moved: 	29
+	fish caught: 	0
+	average dpop/dt: 	1.970325
+	average population: 	73898.911992
+30-day period '# 164:
+	population: 	10030
+	mature population: 	5344
+	births: 	336
+	deaths: 	0
+	resource: 	107521.185358
+	fish moved: 	21
+	fish caught: 	0
+	average dpop/dt: 	2.026263
+	average population: 	73510.879394
+30-day period '# 165:
+	population: 	10322
+	mature population: 	5470
+	births: 	292
+	deaths: 	0
+	resource: 	107185.948972
+	fish moved: 	28
+	fish caught: 	0
+	average dpop/dt: 	2.072691
+	average population: 	73129.452811
+30-day period '# 166:
+	population: 	10604
+	mature population: 	5580
+	births: 	282
+	deaths: 	0
+	resource: 	107288.861463
+	fish moved: 	44
+	fish caught: 	0
+	average dpop/dt: 	2.116567
+	average population: 	72754.282435
+30-day period '# 167:
+	population: 	10778
+	mature population: 	5662
+	births: 	174
+	deaths: 	0
+	resource: 	106771.475151
+	fish moved: 	36
+	fish caught: 	0
+	average dpop/dt: 	2.138492
+	average population: 	72384.904167
+30-day period '# 168:
+	population: 	10984
+	mature population: 	5750
+	births: 	206
+	deaths: 	0
+	resource: 	106972.234854
+	fish moved: 	34
+	fish caught: 	0
+	average dpop/dt: 	2.166469
+	average population: 	72021.008087
+30-day period '# 169:
+	population: 	11114
+	mature population: 	5812
+	births: 	130
+	deaths: 	0
+	resource: 	106952.794054
+	fish moved: 	7
+	fish caught: 	0
+	average dpop/dt: 	2.179216
+	average population: 	71662.342941
+30-day period '# 170:
+	population: 	12450
+	mature population: 	6372
+	births: 	1336
+	deaths: 	0
+	resource: 	107090.428208
+	fish moved: 	719
+	fish caught: 	0
+	average dpop/dt: 	2.426901
+	average population: 	71311.088304
+30-day period '# 171:
+	population: 	14140
+	mature population: 	7201
+	births: 	1690
+	deaths: 	0
+	resource: 	107233.666391
+	fish moved: 	515
+	fish caught: 	0
+	average dpop/dt: 	2.740310
+	average population: 	70974.089729
+30-day period '# 172:
+	population: 	15530
+	mature population: 	7972
+	births: 	1390
+	deaths: 	0
+	resource: 	107976.658093
+	fish moved: 	346
+	fish caught: 	0
+	average dpop/dt: 	2.992293
+	average population: 	70649.810212
+30-day period '# 173:
+	population: 	16723
+	mature population: 	8574
+	births: 	1194
+	deaths: 	1
+	resource: 	107016.878207
+	fish moved: 	474
+	fish caught: 	0
+	average dpop/dt: 	3.203640
+	average population: 	70336.747893
+30-day period '# 174:
+	population: 	17676
+	mature population: 	9108
+	births: 	954
+	deaths: 	1
+	resource: 	107422.962464
+	fish moved: 	260
+	fish caught: 	0
+	average dpop/dt: 	3.366857
+	average population: 	70033.222857
+30-day period '# 175:
+	population: 	18532
+	mature population: 	9636
+	births: 	856
+	deaths: 	0
+	resource: 	106858.473784
+	fish moved: 	276
+	fish caught: 	0
+	average dpop/dt: 	3.509848
+	average population: 	69738.340909
+30-day period '# 176:
+	population: 	19252
+	mature population: 	9988
+	births: 	722
+	deaths: 	2
+	resource: 	107614.935831
+	fish moved: 	252
+	fish caught: 	0
+	average dpop/dt: 	3.625612
+	average population: 	69451.163089
+30-day period '# 177:
+	population: 	19786
+	mature population: 	10281
+	births: 	534
+	deaths: 	0
+	resource: 	106704.162644
+	fish moved: 	174
+	fish caught: 	0
+	average dpop/dt: 	3.705243
+	average population: 	69170.725468
+30-day period '# 178:
+	population: 	20304
+	mature population: 	10570
+	births: 	518
+	deaths: 	0
+	resource: 	106915.721006
+	fish moved: 	169
+	fish caught: 	0
+	average dpop/dt: 	3.781006
+	average population: 	68896.382495
+30-day period '# 179:
+	population: 	20732
+	mature population: 	10763
+	births: 	428
+	deaths: 	0
+	resource: 	107012.047507
+	fish moved: 	195
+	fish caught: 	0
+	average dpop/dt: 	3.839259
+	average population: 	68627.745926
+30-day period '# 180:
+	population: 	21036
+	mature population: 	10960
+	births: 	304
+	deaths: 	0
+	resource: 	107655.005510
+	fish moved: 	239
+	fish caught: 	0
+	average dpop/dt: 	3.874033
+	average population: 	68363.992265
+30-day period '# 181:
+	population: 	21342
+	mature population: 	11090
+	births: 	306
+	deaths: 	0
+	resource: 	107207.168727
+	fish moved: 	227
+	fish caught: 	0
+	average dpop/dt: 	3.908791
+	average population: 	68104.841026
+30-day period '# 182:
+	population: 	23439
+	mature population: 	12151
+	births: 	2100
+	deaths: 	3
+	resource: 	106910.465783
+	fish moved: 	2838
+	fish caught: 	0
+	average dpop/dt: 	4.269399
+	average population: 	67852.804554
+30-day period '# 183:
+	population: 	26939
+	mature population: 	13880
+	births: 	3508
+	deaths: 	8
+	resource: 	107462.803289
+	fish moved: 	2210
+	fish caught: 	0
+	average dpop/dt: 	4.880254
+	average population: 	67621.566667
+30-day period '# 184:
+	population: 	29663
+	mature population: 	15328
+	births: 	2726
+	deaths: 	2
+	resource: 	107391.275244
+	fish moved: 	1659
+	fish caught: 	0
+	average dpop/dt: 	5.344685
+	average population: 	67409.591712
+30-day period '# 185:
+	population: 	32050
+	mature population: 	16543
+	births: 	2390
+	deaths: 	3
+	resource: 	107382.910327
+	fish moved: 	1369
+	fish caught: 	0
+	average dpop/dt: 	5.743728
+	average population: 	67213.460036
+30-day period '# 186:
+	population: 	34105
+	mature population: 	17523
+	births: 	2056
+	deaths: 	1
+	resource: 	107591.215501
+	fish moved: 	1359
+	fish caught: 	0
+	average dpop/dt: 	6.079323
+	average population: 	67031.367736
+30-day period '# 187:
+	population: 	35732
+	mature population: 	18389
+	births: 	1628
+	deaths: 	1
+	resource: 	107225.154012
+	fish moved: 	1097
+	fish caught: 	0
+	average dpop/dt: 	6.335461
+	average population: 	66860.681738
+30-day period '# 188:
+	population: 	37201
+	mature population: 	19145
+	births: 	1470
+	deaths: 	1
+	resource: 	106540.573554
+	fish moved: 	1416
+	fish caught: 	0
+	average dpop/dt: 	6.561023
+	average population: 	66699.974250
+30-day period '# 189:
+	population: 	38397
+	mature population: 	19711
+	births: 	1196
+	deaths: 	0
+	resource: 	106944.235275
+	fish moved: 	1163
+	fish caught: 	0
+	average dpop/dt: 	6.736316
+	average population: 	66547.991228
+30-day period '# 190:
+	population: 	39341
+	mature population: 	20234
+	births: 	946
+	deaths: 	2
+	resource: 	107572.266125
+	fish moved: 	787
+	fish caught: 	0
+	average dpop/dt: 	6.865794
+	average population: 	66403.269110
+30-day period '# 191:
+	population: 	40105
+	mature population: 	20679
+	births: 	764
+	deaths: 	0
+	resource: 	106750.227294
+	fish moved: 	626
+	fish caught: 	0
+	average dpop/dt: 	6.962674
+	average population: 	66264.449653
+30-day period '# 192:
+	population: 	40743
+	mature population: 	20989
+	births: 	638
+	deaths: 	0
+	resource: 	107228.750457
+	fish moved: 	611
+	fish caught: 	0
+	average dpop/dt: 	7.036788
+	average population: 	66130.680484
+30-day period '# 193:
+	population: 	41311
+	mature population: 	21300
+	births: 	568
+	deaths: 	0
+	resource: 	107190.839388
+	fish moved: 	653
+	fish caught: 	0
+	average dpop/dt: 	7.098110
+	average population: 	66001.363574
+30-day period '# 194:
+	population: 	44531
+	mature population: 	22849
+	births: 	3228
+	deaths: 	8
+	resource: 	107250.858361
+	fish moved: 	13408
+	fish caught: 	0
+	average dpop/dt: 	7.612137
+	average population: 	65878.621197
+30-day period '# 195:
+	population: 	51927
+	mature population: 	26431
+	births: 	7438
+	deaths: 	42
+	resource: 	106700.480773
+	fish moved: 	10813
+	fish caught: 	0
+	average dpop/dt: 	8.831122
+	average population: 	65790.142687
+30-day period '# 196:
+	population: 	57821
+	mature population: 	29257
+	births: 	5922
+	deaths: 	28
+	resource: 	106997.192594
+	fish moved: 	6748
+	fish caught: 	0
+	average dpop/dt: 	9.783587
+	average population: 	65735.728088
+30-day period '# 197:
+	population: 	62840
+	mature population: 	31694
+	births: 	5050
+	deaths: 	31
+	resource: 	106992.761685
+	fish moved: 	6963
+	fish caught: 	0
+	average dpop/dt: 	10.579125
+	average population: 	65709.429966
+30-day period '# 198:
+	population: 	66904
+	mature population: 	33820
+	births: 	4076
+	deaths: 	12
+	resource: 	107057.992052
+	fish moved: 	7556
+	fish caught: 	0
+	average dpop/dt: 	11.206700
+	average population: 	65705.833668
+30-day period '# 199:
+	population: 	70257
+	mature population: 	35438
+	births: 	3360
+	deaths: 	7
+	resource: 	106836.505489
+	fish moved: 	5432
+	fish caught: 	0
+	average dpop/dt: 	11.709500
+	average population: 	65720.932667
+30-day period '# 200:
+	population: 	72954
+	mature population: 	36990
+	births: 	2710
+	deaths: 	13
+	resource: 	107135.458334
+	fish moved: 	4736
+	fish caught: 	0
+	average dpop/dt: 	12.098507
+	average population: 	65750.496352
+30-day period '# 201:
+	population: 	75227
+	mature population: 	38246
+	births: 	2278
+	deaths: 	5
+	resource: 	106766.890067
+	fish moved: 	4371
+	fish caught: 	0
+	average dpop/dt: 	12.413696
+	average population: 	65792.128878
+30-day period '# 202:
+	population: 	77035
+	mature population: 	39205
+	births: 	1810
+	deaths: 	2
+	resource: 	107363.624055
+	fish moved: 	3633
+	fish caught: 	0
+	average dpop/dt: 	12.649425
+	average population: 	65843.268473
+30-day period '# 203:
+	population: 	78568
+	mature population: 	39982
+	births: 	1534
+	deaths: 	1
+	resource: 	106479.778380
+	fish moved: 	3772
+	fish caught: 	0
+	average dpop/dt: 	12.837908
+	average population: 	65902.098366
+30-day period '# 204:
+	population: 	79860
+	mature population: 	40644
+	births: 	1296
+	deaths: 	4
+	resource: 	106506.957878
+	fish moved: 	3453
+	fish caught: 	0
+	average dpop/dt: 	12.985366
+	average population: 	65967.281789
+30-day period '# 205:
+	population: 	80904
+	mature population: 	41233
+	births: 	1044
+	deaths: 	0
+	resource: 	106762.576458
+	fish moved: 	3417
+	fish caught: 	0
+	average dpop/dt: 	13.091262
+	average population: 	66037.467799
+30-day period '# 206:
+	population: 	84674
+	mature population: 	43187
+	births: 	3818
+	deaths: 	48
+	resource: 	105996.907176
+	fish moved: 	64855
+	fish caught: 	0
+	average dpop/dt: 	13.635105
+	average population: 	66112.835910
+30-day period '# 207:
+	population: 	101048
+	mature population: 	50919
+	births: 	16716
+	deaths: 	342
+	resource: 	106814.707609
+	fish moved: 	37580
+	fish caught: 	0
+	average dpop/dt: 	16.193590
+	average population: 	66243.663462
+30-day period '# 208:
+	population: 	113765
+	mature population: 	57048
+	births: 	12928
+	deaths: 	211
+	resource: 	106583.578151
+	fish moved: 	27926
+	fish caught: 	0
+	average dpop/dt: 	18.144338
+	average population: 	66442.295853
+30-day period '# 209:
+	population: 	124243
+	mature population: 	62205
+	births: 	10640
+	deaths: 	162
+	resource: 	106833.382085
+	fish moved: 	25275
+	fish caught: 	0
+	average dpop/dt: 	19.721111
+	average population: 	66694.338571
+30-day period '# 210:
+	population: 	132741
+	mature population: 	66339
+	births: 	8586
+	deaths: 	88
+	resource: 	105899.434985
+	fish moved: 	23582
+	fish caught: 	0
+	average dpop/dt: 	20.970142
+	average population: 	66989.047709
+30-day period '# 211:
+	population: 	139586
+	mature population: 	69843
+	births: 	6920
+	deaths: 	75
+	resource: 	105915.074061
+	fish moved: 	20156
+	fish caught: 	0
+	average dpop/dt: 	21.947484
+	average population: 	67316.366667
+30-day period '# 212:
+	population: 	144967
+	mature population: 	72601
+	births: 	5430
+	deaths: 	49
+	resource: 	106240.592216
+	fish moved: 	14777
+	fish caught: 	0
+	average dpop/dt: 	22.686541
+	average population: 	67669.141002
