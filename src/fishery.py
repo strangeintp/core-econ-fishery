@@ -11,6 +11,7 @@ from random import gauss
 from random import choice
 from random import uniform
 from math import exp
+from math import log
 
 def GenBoundedRandomNormal(meanVal,stdDev,lowerBound,upperBound):
     aRand = gauss(meanVal,stdDev) # could also use: normalvariate()but gauss () is slightly faster.
@@ -21,11 +22,11 @@ def GenBoundedRandomNormal(meanVal,stdDev,lowerBound,upperBound):
 Ocean parameters
 """
 TheOcean = None
-Initial_Population = 20000
+Initial_Population = 60000
 ocean_dim = 50
 
-patch_resource = 5.0
-patch_regrow_rate = 4.0
+patch_resource = 50.0
+patch_regrow_rate = 1.0
 patch_diffusion_rate = 8.0/9.0 #spread evenly all directions
 
 FEMALE = 0
@@ -37,21 +38,32 @@ Fish parameters
 FRY_SIZE = 0.001
 LONGEVITY = 3650  #longevity, days
 MATURE_AGE = 365   #age of maturity, days
-MATURE_SIZE = 1.05  #how big at MATURE_AGE
-SPAWN_SEASON = 30  # how many days does spawning last?
-BROOD = 5 # number of spawn produced by pregnancy
-MALE_FACTOR = 0.05 
-METABOLIC_RATE = 0.05 # fraction of body mass fish can eat in a setting
+MATURE_SIZE = 0.75  #what fraction of full size at maturity?
+MATURE_TAU = MATURE_AGE/-log(1-MATURE_SIZE)  # results in size(age) = 1 - e^-(age/MATURE_AGE)
+SPAWN_SEASON = 360  # how many days does spawning last?
+SPAWN_BEHAVIOR = False # special behavior for spawning; not really needed for high quantities of fish
+BROOD = 2 # number of spawn produced by pregnancy
+P_SEASON = 0.99 # probability of brooding during spawn season assuming daily exposure to 50% male population ratio 
+METABOLIC_RATE = 0.05 # fraction of body mass fish can eat in a setting; daily energy cost
 MOVE_COST = 0.2/ocean_dim
+
+MALE_FACTOR = 2 * (1 - (1-P_SEASON)**(1/SPAWN_SEASON))  # P_DAILY = MALE_FACTOR*MALE_RATIO  ==> produces P_SEASON birth probability @ male_ratio=1/2
+
+def minimumResource(fish):
+    return fish.size*METABOLIC_RATE  # assume fish can only extract so much from the environment, proportional to fish size
 
 """
 Boat Parameters
 """
+TRANSIENT_DELAY = 0  #moratorium to let initial population transients settle out
 DISTANCE = ocean_dim
-HOLD_CAPACITY = 2
-TECH_VARIANCE = 0.01
+TECH_VARIANCE = 0
 NUM_BOATS = 20
-NET_SIZE = 0.7  # what's the smallest fish size the net can catch
+NET_SIZE = 0.8  # what's the smallest fish size the net can catch
+HOLD_CAPACITY = 9.9*NET_SIZE
+CAPTURE_EFFICIENCY = 0.25
+
+SPAWN_PREVENTION_POLICY = False
 
 patch00 = None
 
@@ -76,7 +88,7 @@ class Fish(object):
     def grow(self):
         if self.age < MATURE_AGE or (self.age > MATURE_AGE and self.health >= 1):
             old_size = self.size
-            self.size = MATURE_SIZE*(1 - exp(-3*self.age/MATURE_AGE))  # 3 time constants = ~0.95 of full growth
+            self.size = 1 - exp(-self.age/MATURE_TAU)  # reaches MATURE_SIZE at MATURE_AGE
             self.health -= 2*(self.size - old_size)/(self.size + old_size)
         
     def move(self):
@@ -95,7 +107,7 @@ class Fish(object):
             else:
                 resource = patch.resource - METABOLIC_RATE
             attractors[patch] = food_factor*resource/norm
-        if self.spawning:
+        if self.spawning and SPAWN_BEHAVIOR:
             spawn_attractors = {}
             count = 0
             for patch in patches:
@@ -128,8 +140,8 @@ class Fish(object):
     
     def spawn(self):
         if self.fertile and self.spawning:
-            x_mat = TheOcean.countMatureMaleFishAt(self.patch)
-            p = 1 - exp(-x_mat*MALE_FACTOR)
+            y_mat = TheOcean.getMatureMaleRatioAt(self.patch)
+            p = MALE_FACTOR*y_mat
             if random()<p:
                 for i in range(BROOD):
                     TheOcean.addFish(Fish(self.patch))  # spawn a new fish
@@ -147,6 +159,8 @@ class Fish(object):
         if not self.fertile:  #a faster check than the next, saves a few instructions per fish step
             if self.age >= MATURE_AGE and self.gender == FEMALE:
                 self.fertile = True
+                if spawning >= 0:
+                    self.spawning = True
         if spawning==0 and self.age >= MATURE_AGE:
             self.spawning = True  # turn on at the beginning of spawn season
         elif spawning==-1:
@@ -154,7 +168,7 @@ class Fish(object):
         
         self.grow()
         while(self.health < 1 and self.canMove()):
-            while(self.patch.resource > 0 and self.health < 1.0):
+            while(self.patch.resource > minimumResource(self) and self.health < 1.0):
                 self.eat()
             if self.health < 1: # not enough food at current location
                 self.move()
@@ -218,7 +232,7 @@ class Ocean(object):
             y = randint(0, ocean_dim-1)
             new_fish.patch = self.patches[(x,y)]
             new_fish.age = randint(0,LONGEVITY)
-            new_fish.size = MATURE_SIZE*(1 - exp(-3*new_fish.age/MATURE_AGE))
+            new_fish.size = 1 - exp(-new_fish.age/MATURE_TAU)
             self.addFish(new_fish)
         
         self.boats = []    
@@ -236,29 +250,29 @@ class Ocean(object):
         self.total_resource = 0
         self.fish_moved = 0
         self.fish_caught = 0
-        if self.ticks%365 <= SPAWN_SEASON:
+        if self.ticks%365 <= SPAWN_SEASON :
             self.spawning += 1
-            boats_on_water = self.boats[:]
         else:
             self.spawning = -1
-            boats_on_water = self.boats[:]
         
-        #place boats        
+        #place boats
+        if (self.spawning and SPAWN_PREVENTION_POLICY) or self.ticks <= TRANSIENT_DELAY:
+            boats_on_water = []
+        else:
+            boats_on_water = self.boats[:]
+            
         for boat in boats_on_water:
             (x,y) = (randint(0, ocean_dim-1), randint(0, ocean_dim-1))
             start = self.patches[(x,y)]
             boat.beginStep(start)
-            
+
+        # regrow resource    
         patches = list(self.patches.values())
         shuffle(patches)
         for patch in patches:
             patch.regrow()
             self.total_resource += patch.resource
-            patch.diffuse(self.getNeighborsOf(patch))
-            
-        if self.total_resource < 0.1 * ocean_dim**2:
-            pass # a breakpoint for debugging
-        
+            patch.diffuse(self.getNeighborsOf(patch))        
         
         # cycle through fish, patch-wise   
         shuffle(patches)
@@ -267,8 +281,9 @@ class Ocean(object):
                 boat = choice(boats_on_water)
                 if boat.update():
                     boats_on_water.remove(boat)  # boat has to go home because ran out of gas or hold full
-            shuffle(self.fishes_at[patch])
-            for fish in self.fishes_at[patch]:
+            fishes = list(self.fishes_at[patch])  # make a list copy so iterable doesn't change when fish die in loop below
+            shuffle(fishes)
+            for fish in fishes:
                 fish.step(self.spawning)
             
     def getNeighborsOf(self, patch):
@@ -288,6 +303,16 @@ class Ocean(object):
             if fish.age >= MATURE_AGE and fish.gender==MALE:
                 count += 1
         return count
+
+    def getMatureMaleRatioAt(self, patch):
+        mat_count = 0
+        male_count = 0
+        for fish in self.fishes_at[patch]:
+            if fish.age >= MATURE_AGE:
+                mat_count += 1
+                if fish.gender == MALE:
+                    male_count += 1
+        return male_count/mat_count
     
     def countMatureFemaleFishAt(self, patch):
         count = 0
@@ -301,6 +326,13 @@ class Ocean(object):
         for fish in self.fishes_at[patch]:
             if fish.age >= MATURE_AGE:
                 count += 1
+        return count
+
+    def countMaturePopulation(self):
+        patches = list(self.patches.values())
+        count = 0
+        for patch in patches:
+            count += sum([1 for fish in self.fishes_at[patch] if fish.age>=MATURE_AGE])
         return count
     
     def countFishAt(self, patch):
@@ -327,20 +359,23 @@ class Ocean(object):
         y = (patch.y+dy)%ocean_dim
         return self.patches[(x,y)]
     
-    def haulCatch(self, boat):
-        catch = [fish for fish in self.fishes_at[boat.patch] if fish.size>NET_SIZE and random()<boat.capture_efficiency ]
-        for fish in catch:
-            self.removeDeadFish(fish)
-        self.fish_caught += len(catch)
-        return sum([fish.size for fish in catch])
+    def removeCaughtFish(self, fish):
+        self.removeDeadFish(fish)
+        self.fish_caught += 1
         
 class Boat(object):
     
     def __init__(self):
-        self.max_distance = DISTANCE*GenBoundedRandomNormal(1.0, TECH_VARIANCE, 0.2, 2.0) # how far can a boat travel in a day
-        self.hold_capacity = HOLD_CAPACITY*GenBoundedRandomNormal(1.0, TECH_VARIANCE, 0.2, 2.0) # how many fish can it hold
-        self.capture_efficiency = GenBoundedRandomNormal(0.5, TECH_VARIANCE*0.5, 0.1, 0.9) # what fraction can it catch in its patch
-        self.detection_noise = uniform(0, TECH_VARIANCE) # how far can it be off in counting
+        if TECH_VARIANCE > 0:
+            self.max_distance = DISTANCE*GenBoundedRandomNormal(1.0, TECH_VARIANCE, 0.2, 2.0) # how far can a boat travel in a day
+            self.hold_capacity = HOLD_CAPACITY*GenBoundedRandomNormal(1.0, TECH_VARIANCE, 0.2, 2.0) # how many fish can it hold
+            self.capture_efficiency = CAPTURE_EFFICIENCY*GenBoundedRandomNormal(0.5, TECH_VARIANCE*0.5, 0.1, 0.9) # what fraction can it catch in its patch
+            self.detection_noise = uniform(0, TECH_VARIANCE) # how far can it be off in counting
+        else:
+            self.max_distance = DISTANCE
+            self.hold_capacity = HOLD_CAPACITY
+            self.capture_efficiency = CAPTURE_EFFICIENCY
+            self.detection_noise = 0
         
     def beginStep(self, patch):
         self.distance = distanceBetween(patch00, patch)
@@ -349,21 +384,29 @@ class Boat(object):
         
     def update(self):
         # catch fish here
-        catch = TheOcean.haulCatch(self)
-        self.hold += catch
+        self.haulCatch()
         if self.hold < self.hold_capacity and self.detectFishHere() == 0:
             destination = TheOcean.randomPatchNearMe(self.patch)
             self.distance += distanceBetween(self.patch, destination)
             self.patch = destination
-            catch = TheOcean.haulCatch(self)
-            self.hold += catch
+            self.haulCatch()
         if self.distance >= self.max_distance or self.hold >= self.hold_capacity:
             return True
         return False
     
     def detectFishHere(self):
         count = TheOcean.countMatureFishAt(self.patch)
-        return count*GenBoundedRandomNormal(1.0, self.detection_noise, 0, 2)             
+        return count*GenBoundedRandomNormal(1.0, self.detection_noise, 0, 2)
+
+    def haulCatch(self):
+        catch = [fish for fish in TheOcean.fishes_at[self.patch] if fish.size>NET_SIZE and random()<self.capture_efficiency ]
+        shuffle(catch)
+        for fish in catch:
+            self.hold += fish.size
+            TheOcean.removeCaughtFish(fish)
+            if self.hold >= self.hold_capacity:
+                break
+                
 
 if __name__ == '__main__':
     TheOcean = Ocean()
@@ -377,9 +420,10 @@ if __name__ == '__main__':
         TheOcean.step()
         fish_caught += TheOcean.fish_caught
         pop_integrated += TheOcean.population
-        if step%record_period==0:
+        if step%record_period==(record_period-1):
             print("%i-day period '# %i:"%(record_period, int(step/record_period)))
             print("\tpopulation: \t%i"%TheOcean.population)
+            print("\tmature population: \t%i"%TheOcean.countMaturePopulation())
             new_births = TheOcean.fish_births - births
             births = TheOcean.fish_births
             new_deaths = TheOcean.fish_deaths - deaths
@@ -392,3 +436,5 @@ if __name__ == '__main__':
             fish_caught = 0          
             print("\taverage dpop/dt: \t%f"%((TheOcean.fish_births-TheOcean.fish_deaths)/(step+1)))
             print("\taverage population: \t%f"%((pop_integrated)/(step+1)))
+            if TheOcean.population == 0:
+                break
